@@ -1,0 +1,29 @@
+Start Game 
+Ask the player to place the foyer
+Ask the player to select a move
+Player inputs N S E W  
+Check that there is a door in the input direction
+checks if there is already a room there. If there is dont draw new tile but draw a dev card
+if theres a door there draw a new card depending on if the player is indoor or outdoor
+allow to player to rotate the card
+when the player has rotated as they like allow the card to be placed
+after the card is placed move the player
+check before placing that a door lines up with the previous rooms doors
+if they line up place the tile and move the player to the newly placed tile
+
+
+draw tile should
+take a direction
+draw a card, set its x and y value, set it as the current tile
+
+states
+
+Starting - starts the game places the foyer
+
+Rotating - Allows the player to rotate the tile - will only come out of this state when the tile is placed
+
+Moving - Allows the player to select the next move - once moved goes into the drawing card state
+
+Drawing Card - 
+
+Resolving Card - 
