@@ -3,11 +3,16 @@ import random
 from directions import Direction as d
 import pandas as pd
 import cmd
+import sys
+import sqlite3
+from player import Player
+from tile import OutdoorTile, IndoorTile
+from dev_card import DevCard
 
 
 class Game:
     def __init__(self, player, time=9, game_map=None, indoor_tiles=None, outdoor_tiles=None, chosen_tile=None,
-                 dev_cards=None, state="Starting", current_move_direction=None, can_cower=True):
+                 dev_cards=None, state="Starting", current_move_direction=None, can_cower=True, connection=None):
         if indoor_tiles is None:
             indoor_tiles = []  # Will contain a list of all available indoor tiles
         if outdoor_tiles is None:
@@ -28,8 +33,77 @@ class Game:
         self.current_zombies = 0
         self.can_cower = can_cower
         self.room_item = None
+        self.connection = connection
 
-    def start_game(self):  #  Run to initialise the game
+    def get_data(self):
+        cursor = self.connection.cursor()
+        query = "SELECT zombies_killed," \
+                " health_lost," \
+                " move_count FROM" \
+                " playerStats"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+        cursor.close()
+
+    def delete_data(self):
+        cursor = self.connection.cursor()
+        query = "DELETE FROM playerStats"
+        cursor.execute(query)
+        cursor.close()
+
+    def connect_db(self):
+        try:
+            self.connection = sqlite3.connect("database/player_stats.db")
+        except Exception as e:
+            print(e)
+        else:
+            print("Opened database successfully")
+        finally:
+            print("Finishing connecting to database")
+
+    def check_table_exists(self):
+        check = """SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{playerStats}'"""
+        cursor = self.connection.cursor()
+        cursor.execute(check)
+        if cursor.fetchone()[0] == 1:
+            cursor.close()
+            return True
+        else:
+            cursor.close()
+            return False
+
+    def create_tables(self):
+        cursor = self.connection.cursor()
+        table_command = """
+        CREATE TABLE playerStats (
+        session_id INTEGER PRIMARY KEY,
+        zombies_killed INTEGER,
+        health_lost INTEGER,
+        move_count INTEGER)"""
+        try:
+            cursor.execute(table_command)
+            cursor.close()
+        except sqlite3.Error as e:
+            print("An error occurred:", e.args[0])
+
+    def input_data(self):
+        cursor = self.connection.cursor()
+        v = (self.player.zombies_killed,
+             self.player.health_lost,
+             self.player.move_count)
+        input_command = ''' INSERT INTO
+         playerStats(zombies_killed,health_lost,move_count)
+              VALUES(?,?,?) '''
+        try:
+            cursor.execute(input_command, v)
+            self.connection.commit()
+            cursor.close()
+        except sqlite3.Error as e:
+            print("An error occurred:", e.args[0])
+
+    def start_game(self):  # Run to initialise the game
         self.load_tiles()
         self.load_dev_cards()
         for tile in self.indoor_tiles:
@@ -66,8 +140,8 @@ class Game:
         return self.time
 
     # Loads tiles from excel file
-    def load_tiles(self):  # Needs Error handling in this method
-        excel_data = pd.read_excel('Tiles.xlsx')
+    def load_tiles(self):
+        excel_data = pd.read_excel(r'additional_files\Tiles.xlsx')
         tiles = []
         for name in excel_data.iterrows():
             tiles.append(name[1].tolist())
@@ -110,7 +184,7 @@ class Game:
 
     # Loads development cards from excel file
     def load_dev_cards(self):
-        card_data = pd.read_excel('DevCards.xlsx')
+        card_data = pd.read_excel(r'additional_files\DevCards.xlsx')
         for card in card_data.iterrows():
             item = card[1][0]
             event_one = (card[1][1], card[1][2])
@@ -126,6 +200,7 @@ class Game:
     def move_player(self, x, y):  # Moves the player coordinates to the selected tile, changes game state
         self.player.set_y(y)
         self.player.set_x(x)
+        self.player.add_move_count()
         if self.state == "Running":
             self.state = "Moving"
         else:
@@ -317,7 +392,7 @@ class Game:
                 response = input("You already have two items, do you want to drop one of them? (Y/N) ")
                 if response == "Y" or response == "y":
                     self.state = "Swapping Item"
-                else: # If player doesn't want to drop item, just move on
+                else:  # If player doesn't want to drop item, just move on
                     self.state = "Moving"
                     self.room_item = None
                     self.get_game()
@@ -360,7 +435,7 @@ class Game:
                     player_attack += 3
                     self.player.use_item_charge("Chainsaw")
                 else:
-                    print("This item has no charges left")            
+                    print("This item has no charges left")
             elif "Golf Club" in item or "Grisly Femur" in item or "Board With Nails" in item:
                 player_attack += 1
             elif "Can of Soda" in item:
@@ -381,6 +456,8 @@ class Game:
             damage = 0
         print(f"You attacked the zombies, you lost {damage} health")
         self.can_cower = True
+        self.player.add_health_lost(damage)
+        self.player.add_zombies_killed(zombies)
         self.player.add_health(-damage)
         if self.player.get_health() <= 0:
             self.lose_game()
@@ -408,11 +485,11 @@ class Game:
         if room_name == "Garden":
             self.player.add_health(1)
             print(f"After ending your turn in the {room_name} you have gained one health")
-            self.state ="Moving"
+            self.state = "Moving"
         if room_name == "Kitchen":
             self.player.add_health(1)
             print(f"After ending your turn in the {room_name} you have gained one health")
-            self.state ="Moving"
+            self.state = "Moving"
 
     # If player chooses to cower instead of move to a new room
     def trigger_cower(self):
@@ -464,6 +541,7 @@ class Game:
                 print("player already has the totem")
                 return
             else:
+                print("Searching for totem, Resolving dev card")
                 self.trigger_dev_card(self.time)
                 self.player.found_totem()
         else:
@@ -472,6 +550,7 @@ class Game:
     def bury_totem(self):  #
         if self.get_current_tile().name == "Graveyard":
             if self.player.has_totem:
+                print("Burying totem, Resolving dev card")
                 self.trigger_dev_card(self.time)
                 if self.player.health != 0:
                     print("You Won")
@@ -500,178 +579,6 @@ class Game:
 
     def lose_game(self):
         self.state = "Game Over"
-
-
-class Player:
-    def __init__(self, attack=1, health=6, x=16, y=16, has_totem=False):
-        self.attack = attack
-        self.health = health
-        self.x = x  # x Will represent the players position horizontally starts at 16
-        self.y = y  # y will represent the players position vertically starts at 16
-        self.items = []  # Holds the players items. Can hold 2 items at a time
-        self.has_totem = has_totem
-
-    def get_health(self):
-        return self.health
-
-    def found_totem(self):
-        self.has_totem = True
-
-    def get_attack(self):
-        return self.attack
-
-    def set_attack(self, attack):
-        self.attack = attack
-
-    def set_health(self, health):
-        self.health = health
-
-    def add_health(self, health):
-        self.health += health
-
-    def add_attack(self, attack):
-        self.attack += attack
-
-    def get_items(self):
-        return self.items
-
-    def get_item_charges(self, item):
-        for check_item in self.get_items():
-            if check_item[0] == item:
-                return check_item[1]
-
-    def set_item_charges(self, item, charge):
-        for check_item in self.get_items():
-            if check_item[0] == item:
-                check_item[1] = charge
-    
-    def use_item_charge(self, item):
-        for check_item in self.get_items():
-            if check_item[0] == item:
-                check_item[1] -= 1
-
-    def add_item(self, item, charges):
-        if len(self.items) < 2:
-            self.items.append([item, charges])
-
-    def remove_item(self, item):
-        self.items.pop(self.items.index(item))
-
-    def set_x(self, x):
-        self.x = x
-
-    def set_y(self, y):
-        self.y = y
-
-    def get_x(self):
-        return self.x
-
-    def get_y(self):
-        return self.y
-
-
-# Development cards for the game. Played when the player moves into the room.
-class DevCard:
-    def __init__(self, item, charges, event_one, event_two, event_three):
-        self.item = item
-        self.charges = charges
-        self.event_one = event_one
-        self.event_two = event_two
-        self.event_three = event_three
-
-        if self.charges != "Unlimited":
-            int(self.charges)
-
-    def get_event_at_time(self, time):
-        if time == 9:
-            return self.event_one
-        elif time == 10:
-            return self.event_two
-        elif time == 11:
-            return self.event_three
-
-    def get_item(self):
-        return self.item
-
-    def get_charges(self):
-        return self.charges
-
-    def __str__(self):
-        return "Item: {}, Event 1: {}, Event 2: {}, Event 3: {}".format(self.item, self.event_one, self.event_two,
-                                                                        self.event_three)
-
-
-class Tile:
-    def __init__(self, name, x=16, y=16, effect=None, doors=None, entrance=None):
-        if doors is None:
-            doors = []
-        self.name = name
-        self.x = x  # x will represent the tiles position horizontally
-        self.y = y  # y will represent the tiles position vertically
-        self.effect = effect
-        self.doors = doors
-        self.entrance = entrance
-
-    def set_x(self, x):
-        self.x = x
-
-    def set_y(self, y):
-        self.y = y
-
-    def change_door_position(self, idx, direction):
-        self.doors[idx] = direction
-
-    def set_entrance(self, direction):
-        self.entrance = direction
-
-    def rotate_entrance(self):
-        if self.entrance == d.NORTH:
-            self.set_entrance(d.EAST)
-            return
-        if self.entrance == d.SOUTH:
-            self.set_entrance(d.WEST)
-            return
-        if self.entrance == d.EAST:
-            self.set_entrance(d.SOUTH)
-            return
-        if self.entrance == d.WEST:
-            self.set_entrance(d.NORTH)
-            return
-
-    def rotate_tile(self):  # Will rotate the tile 1 position clockwise
-        for door in self.doors:
-            if door == d.NORTH:
-                self.change_door_position(self.doors.index(door), d.EAST)
-            if door == d.EAST:
-                self.change_door_position(self.doors.index(door), d.SOUTH)
-            if door == d.SOUTH:
-                self.change_door_position(self.doors.index(door), d.WEST)
-            if door == d.WEST:
-                self.change_door_position(self.doors.index(door), d.NORTH)
-
-
-class IndoorTile(Tile):
-    def __init__(self, name, effect=None, doors=None, x=16, y=16, entrance=None):
-        if doors is None:
-            doors = []
-        self.type = "Indoor"
-        super().__init__(name, x, y, effect, doors, entrance)
-
-    def __repr__(self):
-        return f'{self.name}, {self.doors}, {self.type},' \
-               f' {self.x}, {self.y}, {self.effect} \n'
-
-
-class OutdoorTile(Tile):
-    def __init__(self, name, effect=None, doors=None, x=16, y=16, entrance=None):
-        if doors is None:
-            doors = []
-        self.type = "Outdoor"
-        super().__init__(name, x, y, effect, doors, entrance)
-
-    def __repr__(self):
-        return f'{self.name}, {self.doors}, {self.type},' \
-               f' {self.x}, {self.y}, {self.effect} \n'
 
 
 class Commands(cmd.Cmd):
@@ -746,7 +653,7 @@ class Commands(cmd.Cmd):
             self.game.select_move(d.NORTH)
             self.game.get_game()
         else:
-            print("Player not ready to move")
+            return print("Player not ready to move")
 
     def do_s(self, line):
         """Moves the player South"""
@@ -754,7 +661,7 @@ class Commands(cmd.Cmd):
             self.game.select_move(d.SOUTH)
             self.game.get_game()
         else:
-            print("Player not ready to move")
+            return print("Player not ready to move")
 
     def do_e(self, line):
         """Moves the player East"""
@@ -762,7 +669,7 @@ class Commands(cmd.Cmd):
             self.game.select_move(d.EAST)
             self.game.get_game()
         else:
-            print("Player not ready to move")
+            return print("Player not ready to move")
 
     def do_w(self, line):
         """Moves the player West"""
@@ -770,7 +677,7 @@ class Commands(cmd.Cmd):
             self.game.select_move(d.WEST)
             self.game.get_game()
         else:
-            print("Player not ready to move")
+            return print("Player not ready to move")
 
     def do_save(self, line):
         """Takes a filepath and saves the game to a file"""
@@ -856,7 +763,7 @@ class Commands(cmd.Cmd):
         if self.game.state != "Game Over":
             self.game.drop_item(item)
             self.game.get_game()
-    
+
     def do_swap(self, line):
         """Swaps an item in you hand with the one in the room"""
         if self.game.state == "Swapping Item":
@@ -871,12 +778,6 @@ class Commands(cmd.Cmd):
             self.game.trigger_dev_card(self.game.time)
         else:
             print("Cannot currently draw a card")
-
-    # DELETE LATER, DEV COMMANDS FOR TESTING
-    def do_give(self, line):
-        self.game.player.add_item("Oil", 2)
-    def do_give2(self, line):
-        self.game.player.add_item("Candle", 1)
 
     def do_run(self, direction):
         """Given a direction will flee attacking zombies at a price of one health"""
@@ -924,6 +825,12 @@ class Commands(cmd.Cmd):
 
     def do_exit(self, line):
         """Exits the game without saving"""
+        if self.game.connection is None:
+            self.game.connect_db()
+            if self.game.check_table_exists() is True:
+                self.game.create_tables()
+            self.game.input_data()
+            self.game.get_data()
         return True
 
     def do_status(self, line):
@@ -932,5 +839,8 @@ class Commands(cmd.Cmd):
             self.game.get_player_status()
 
 
-if __name__ == "__main__":
-    Commands().cmdloop()
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        Commands().onecmd(' '.join(sys.argv[1:]))
+    else:
+        Commands().cmdloop()
