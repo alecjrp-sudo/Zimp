@@ -1,13 +1,13 @@
 import unittest
 import main as m
-import player as p
+from player import Player
 from directions import Direction as d
 
 
 class MyTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.player = p.Player()
+        self.player = Player()
         self.game = m.Game(self.player)
         self.game.start_game()
 
@@ -34,6 +34,58 @@ class MyTestCase(unittest.TestCase):
         state = self.game.state
 
         assert state == "Rotating"
+
+    def test_game_has_player(self):
+        player = self.game.player
+
+        assert player is not None
+
+    def test_player_starting_position(self):
+        expected = (16, 16)
+
+        actual = self.game.player.get_x(), self.game.player.get_y()
+
+        assert expected == actual
+
+    def test_player_starting_items(self):  # Should start with no items
+        expected = []
+
+        actual = self.game.player.get_items()
+
+        assert expected == actual
+
+    def test_player_starting_health(self):  # Should start with no items
+        expected = 6
+
+        actual = self.game.player.get_health()
+
+        assert expected == actual
+
+    def test_player_starting_attack(self):  # Should start with no items
+        expected = 1
+
+        actual = self.game.player.get_attack()
+
+        assert expected == actual
+
+    def test_cant_find_totem_if_not_in_evil_temple(self):
+        expected = False
+
+        self.game.place_tile(16, 16)
+        self.game.search_for_totem()
+        actual = self.game.player.has_totem
+
+        assert expected == actual
+
+    def test_cant_bury_totem_if_not_in_evil_temple(self):
+        expected = True
+
+        self.game.place_tile(16, 16)
+        self.game.player.has_totem = True
+        self.game.bury_totem()
+        actual = self.game.player.has_totem
+
+        assert expected == actual
 
     def test_tile_can_rotate(self):
         tile = self.game.chosen_tile

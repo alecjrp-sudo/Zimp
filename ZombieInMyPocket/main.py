@@ -8,11 +8,14 @@ import sqlite3
 from player import Player
 from tile import OutdoorTile, IndoorTile
 from dev_card import DevCard
+import matplotlib.pyplot as p
 
 
 class Game:
-    def __init__(self, player, time=9, game_map=None, indoor_tiles=None, outdoor_tiles=None, chosen_tile=None,
-                 dev_cards=None, state="Starting", current_move_direction=None, can_cower=True, connection=None):
+    def __init__(self, player, time=9, game_map=None,
+                 indoor_tiles=None, outdoor_tiles=None, chosen_tile=None,
+                 dev_cards=None, state="Starting",
+                 current_move_direction=None, can_cower=True, connection=None):
         if indoor_tiles is None:
             indoor_tiles = []  # Will contain a list of all available indoor tiles
         if outdoor_tiles is None:
@@ -35,17 +38,51 @@ class Game:
         self.room_item = None
         self.connection = connection
 
-    def get_data(self):
+    def plot_data(self):
         cursor = self.connection.cursor()
-        query = "SELECT zombies_killed," \
-                " health_lost," \
-                " move_count FROM" \
+        query = "SELECT COUNT(session_id), SUM(zombies_killed)," \
+                " SUM(health_lost)," \
+                " SUM(move_count) FROM" \
                 " playerStats"
         cursor.execute(query)
-        rows = cursor.fetchall()
-        for row in rows:
-            print(row)
+        data = list(cursor)
         cursor.close()
+        session_count, zombies_killed, health_lost, move_count = data[0]
+        data = {"Statistic": ["Games Played", "Zombies Killed",
+                              "health Lost", "Moves made"],
+                "Number": [session_count, zombies_killed,
+                           health_lost, move_count]
+                }
+        data_frame = pd.DataFrame(data=data)
+
+        data_frame.plot.barh(x="Statistic",
+                             y="Number",
+                             rot=70,
+                             title="Total player statistics")
+        p.tight_layout()
+        p.show(block=True)
+
+    def extract_data(self):
+        if self.connection is None:
+            self.connect_db()
+            if self.check_table_exists() is True:
+                self.create_tables()
+        cursor = self.connection.cursor()
+        query = "SELECT COUNT(session_id), SUM(zombies_killed)," \
+                " SUM(health_lost)," \
+                " SUM(move_count) FROM" \
+                " playerStats"
+        cursor.execute(query)
+        data = list(cursor)
+        cursor.close()
+        session_count, zombies_killed, health_lost, move_count = data[0]
+        data = {"Statistic": ["Games Played", "Zombies Killed",
+                              "health Lost", "Moves made"],
+                "Number": [session_count, zombies_killed,
+                           health_lost, move_count]
+                }
+        df = pd.DataFrame(data)
+        df.to_excel(r'additional_files\player_stats.xlsx')
 
     def delete_data(self):
         cursor = self.connection.cursor()
@@ -60,11 +97,10 @@ class Game:
             print(e)
         else:
             print("Opened database successfully")
-        finally:
-            print("Finishing connecting to database")
 
     def check_table_exists(self):
-        check = """SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{playerStats}'"""
+        check = """SELECT count(name) FROM sqlite_master
+         WHERE type='table' AND name='{playerStats}'"""
         cursor = self.connection.cursor()
         cursor.execute(check)
         if cursor.fetchone()[0] == 1:
@@ -116,18 +152,23 @@ class Game:
         s = ''
         f = ''
         if self.state == "Moving":
-            s = "In this state you are able to move the player using the movement commands of n, e, s, w"
+            s = "In this state you are able to move the" \
+                " player using the movement commands of n, e, s, w"
         if self.state == "Rotating":
             s = "Use the rotate command to rotate tiles and align doors," \
-                " Once you are happy with the door position you can place the tile with the place command"
+                " Once you are happy with the door" \
+                " position you can place the tile with the place command"
         if self.state == "Choosing Door":
-            s = "Choose where to place a new door with the choose command + n, e, s, w"
+            s = "Choose where to place a new door" \
+                " with the choose command + n, e, s, w"
         if self.state == "Drawing Dev Card":
             s = "Use the draw command to draw a random development card"
         for door in self.chosen_tile.doors:
             f += door.name + ', '
-        return print(f' The chosen tile is {self.chosen_tile.name}, the available doors in this room are {f}\n '
-                     f'The state is {self.state}. {s} \n Special Entrances : {self.chosen_tile.entrance}')
+        return print(f' The chosen tile is {self.chosen_tile.name},'
+                     f' the available doors in this room are {f}\n '
+                     f'The state is {self.state}.'
+                     f' {s} \n Special Entrances : {self.chosen_tile.entrance}')
 
     def get_player_status(self):
         return print(f'It is {self.get_time()} pm \n'
@@ -163,7 +204,8 @@ class Game:
             if len(self.indoor_tiles) == 0:
                 return print("No more indoor tiles")
             if self.get_current_tile().name == "Dining Room" \
-                    and self.current_move_direction == self.get_current_tile().entrance:
+                    and self.current_move_direction == \
+                    self.get_current_tile().entrance:
                 t = [t for t in self.outdoor_tiles if t.name == "Patio"]
                 tile = t[0]
                 tile.set_x(x)
@@ -829,9 +871,12 @@ class Commands(cmd.Cmd):
             self.game.connect_db()
             if self.game.check_table_exists() is True:
                 self.game.create_tables()
-            self.game.input_data()
-            self.game.get_data()
+        self.game.input_data()
+        self.game.plot_data()
         return True
+
+    def do_extract(self, line):
+        self.game.extract_data()
 
     def do_status(self, line):
         """Shows the status of the player"""
