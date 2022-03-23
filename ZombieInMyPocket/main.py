@@ -12,6 +12,15 @@ import matplotlib.pyplot as p
 
 
 class Game:
+    """Creates a Game instance
+    >>> test_g = Game(Player())
+    >>> test_g.time
+    9
+    >>> test_g.player.health
+    6
+    >>> test_g.player.attack
+    1
+    """
     def __init__(self, player, time=9, game_map=None,
                  indoor_tiles=None, outdoor_tiles=None, chosen_tile=None,
                  dev_cards=None, state="Starting",
@@ -77,7 +86,7 @@ class Game:
         cursor.close()
         return data
 
-    def extract_data(self):
+    def extract_data(self, filename):
         if self.connection is None:
             self.connect_db()
             if self.check_table_exists() is True:
@@ -97,7 +106,7 @@ class Game:
                            health_lost, move_count]
                 }
         df = pd.DataFrame(data)
-        df.to_excel(r'additional_files\player_stats.xlsx')
+        df.to_excel(rf'additional_files\{filename}.xlsx')
 
     def delete_data(self):
         if self.connection is None:
@@ -110,6 +119,12 @@ class Game:
         cursor.close()
 
     def connect_db(self):
+        """
+        >>> test_g = Game(Player())
+        >>> test_g.connect_db()
+        Opened database successfully
+        True
+        """
         try:
             self.connection = sqlite3.connect("database/player_stats.db")
         except Exception as e:
@@ -160,6 +175,18 @@ class Game:
             print("An error occurred:", e.args[0])
 
     def start_game(self):  # Run to initialise the game
+        """
+        >>> test_g = Game(Player())
+        >>> test_g.start_game()
+        >>> test_g.state
+        'Rotating'
+        >>> test_g.chosen_tile.name
+        'Foyer'
+        >>> test_g.chosen_tile.x
+        16
+        >>> test_g.chosen_tile.y
+        16
+        """
         self.load_tiles()
         self.load_dev_cards()
         for tile in self.indoor_tiles:
@@ -188,7 +215,8 @@ class Game:
         return print(f' The chosen tile is {self.chosen_tile.name},'
                      f' the available doors in this room are {f}\n '
                      f'The state is {self.state}.'
-                     f' {s} \n Special Entrances :'
+                     f' {s} \n'
+                     f' Special Entrances :'
                      f' {self.chosen_tile.entrance}')
 
     def get_player_status(self):
@@ -202,6 +230,14 @@ class Game:
                      f'The game state is {self.state}')
 
     def get_time(self):
+        """
+        >>> test_g = Game(Player())
+        >>> test_g.get_time()
+        9
+        >>> test_g.time = 10
+        >>> test_g.get_time()
+        10
+        """
         return self.time
 
     # Loads tiles from excel file
@@ -268,6 +304,19 @@ class Game:
         self.dev_cards.pop(0)
 
     def move_player(self, x, y):
+        """
+        >>> test_g = Game(Player())
+        >>> test_g.move_player(15,16)
+        >>> test_g.player.get_x()
+        15
+        >>> test_g.player.get_y()
+        16
+        >>> test_g.move_player(15,15)
+        >>> test_g.player.get_x()
+        15
+        >>> test_g.player.get_y()
+        15
+        """
         self.player.set_y(y)
         self.player.set_x(x)
         self.player.add_move_count()
@@ -298,12 +347,23 @@ class Game:
                     self.move_player(x, y)
 
     def check_indoor_outdoor_move(self, current_type, move_type):
-        if current_type != move_type\
-                and self.get_current_tile().name\
+        if current_type != move_type \
+                and self.get_current_tile().name \
                 != "Patio" or "Dining Room":
             return False
 
     def get_destination_coords(self, direction):
+        """
+        >>> test_g = Game(Player())
+        >>> test_g.get_destination_coords(d.NORTH)
+        (16, 15)
+        >>> test_g.get_destination_coords(d.SOUTH)
+        (16, 17)
+        >>> test_g.get_destination_coords(d.WEST)
+        (15, 16)
+        >>> test_g.get_destination_coords(d.EAST)
+        (17, 16)
+        """
         if direction == d.NORTH:
             return self.player.get_x(), self.player.get_y() - 1
         if direction == d.SOUTH:
@@ -320,6 +380,11 @@ class Game:
             return False
 
     def check_for_room(self, x, y):
+        """
+        >>> test_g = Game(Player())
+        >>> test_g.check_for_room(16,16)
+        False
+        """
         if (x, y) not in self.tiles:
             return False
         else:
@@ -361,16 +426,16 @@ class Game:
     def check_dining_room_has_exit(self):
         tile = self.chosen_tile
         if tile.name == "Dining Room":
-            if self.current_move_direction == d.NORTH\
+            if self.current_move_direction == d.NORTH \
                     and tile.entrance == d.SOUTH:
                 return False
-            if self.current_move_direction == d.SOUTH\
+            if self.current_move_direction == d.SOUTH \
                     and tile.entrance == d.NORTH:
                 return False
-            if self.current_move_direction == d.EAST\
+            if self.current_move_direction == d.EAST \
                     and tile.entrance == d.WEST:
                 return False
-            if self.current_move_direction == d.WEST\
+            if self.current_move_direction == d.WEST \
                     and tile.entrance == d.EAST:
                 return False
         else:
@@ -524,7 +589,7 @@ class Game:
                     self.player.use_item_charge("Chainsaw")
                 else:
                     print("This item has no charges left")
-            elif "Golf Club" in item or "Grisly Femur" in\
+            elif "Golf Club" in item or "Grisly Femur" in \
                     item or "Board With Nails" in item:
                 player_attack += 1
             elif "Can of Soda" in item:
@@ -584,6 +649,16 @@ class Game:
 
     # If player chooses to cower instead of move to a new room
     def trigger_cower(self):
+        """
+        >>> test_g = Game(Player())
+        >>> test_g.start_game()
+        >>> test_g.place_tile(16, 16)
+        >>> test_g.trigger_cower()
+        You cower in fear, gaining 3 health, but lose time with the dev card
+        >>> test_g.select_move(d.WEST)
+        >>> test_g.trigger_cower()
+        Cannot cower
+        """
         if self.can_cower:
             if self.state == "Moving":
                 self.player.add_health(3)
@@ -591,11 +666,20 @@ class Game:
                 self.state = "Moving"
                 print("You cower in fear, gaining 3 health,"
                       " but lose time with the dev card")
+            else:
+                return print("Cannot cower")
         else:
             return print("Cannot cower during a zombie door attack")
 
     # Call when player wants to drop an item, and state is dropping item
     def drop_item(self, old_item):
+        """
+        >>> test_g = Game(Player())
+        >>> test_g.start_game()
+        >>> test_g.place_tile(16, 16)
+        >>> test_g.drop_item("Chainsaw")
+        That item is not in your inventory
+        """
         for item in self.player.get_items():
             if item[0] == old_item:
                 self.player.remove_item(item)
@@ -630,6 +714,13 @@ class Game:
             self.state = "Attacking"
 
     def search_for_totem(self):
+        """
+        >>> test_g = Game(Player())
+        >>> test_g.start_game()
+        >>> test_g.place_tile(16, 16)
+        >>> test_g.search_for_totem()
+        You cannot search for a totem in this room
+        """
         if self.get_current_tile().name == "Evil Temple":
             if self.player.has_totem:
                 print("player already has the totem")
@@ -639,9 +730,16 @@ class Game:
                 self.trigger_dev_card(self.time)
                 self.player.found_totem()
         else:
-            print("You cannot search for a totem in this room")
+            return print("You cannot search for a totem in this room")
 
-    def bury_totem(self):  #
+    def bury_totem(self):
+        """
+        >>> test_g = Game(Player())
+        >>> test_g.start_game()
+        >>> test_g.place_tile(16, 16)
+        >>> test_g.bury_totem()
+        Cannot bury totem here
+        """
         if self.get_current_tile().name == "Graveyard":
             if self.player.has_totem:
                 print("Burying totem, Resolving dev card")
@@ -650,9 +748,17 @@ class Game:
                     print("You Won")
                     self.state = "Game Over"
         else:
-            print("Cannot bury totem here")
+            return print("Cannot bury totem here")
 
     def check_for_dead_player(self):
+        """Checks if the player is dead
+        >>> test_g = Game(Player())
+        >>> test_g.check_for_dead_player()
+        False
+        >>> test_g.player.set_health(0)
+        >>> test_g.check_for_dead_player()
+        True
+        """
         if self.player.health <= 0:
             return True
         else:
@@ -660,6 +766,19 @@ class Game:
 
     @staticmethod
     def resolve_doors(n, e, s, w):
+        """Takes in a vale of 0 or 1 indicating if
+         a door exists or not in a direction.
+        >>> test_g = Game(Player())
+        >>> test_g.resolve_doors(1,0,0,0)
+        [<Direction.NORTH: (1,)>]
+        >>> test_g.resolve_doors(0,1,0,0)
+        [<Direction.EAST: (3,)>]
+        >>> test_g.resolve_doors(0,0,1,0)
+        [<Direction.SOUTH: (2,)>]
+        >>> test_g.resolve_doors(0,0,0,1)
+        [<Direction.WEST: 4>]
+
+        """
         doors = []
         if n == 1:
             doors.append(d.NORTH)
@@ -710,7 +829,7 @@ class Commands(cmd.Cmd):
                 return print("Dining room entrance must face an empty tile")
             else:
                 if self.game.get_current_tile().name == "Dining Room" \
-                        and self.game.current_move_direction ==\
+                        and self.game.current_move_direction == \
                         self.game.get_current_tile().entrance:
                     if self.game.check_entrances_align():
                         self.game.place_tile(self.game.chosen_tile.x,
@@ -790,9 +909,12 @@ class Commands(cmd.Cmd):
         else:
             if len(self.game.tiles) == 0:
                 return print("Cannot save game with empty map")
-            file_name = line + '.pickle'
-            with open(file_name, 'wb') as f:
-                pickle.dump(self.game, f)
+            try:
+                file_name = line + '.pickle'
+                with open(file_name, 'wb') as f:
+                    pickle.dump(self.game, f)
+            except OSError as o:
+                print(f"Oh no an error {o}")
 
     def do_load(self, name):
         """Takes a filepath and loads the game from a file"""
@@ -804,8 +926,8 @@ class Commands(cmd.Cmd):
                 with open(file_name, 'rb') as f:
                     self.game = pickle.load(f)
                     self.game.get_game()
-            except FileNotFoundError:
-                print("No File with this name exists")
+            except (FileNotFoundError, OSError) as o:
+                print(f"Oh no an error {o}")
 
     def do_restart(self, line):
         """Deletes your progress and ends the game"""
@@ -831,7 +953,7 @@ class Commands(cmd.Cmd):
             elif arg1 != '' and arg2 != 0:
                 self.game.trigger_attack(arg1, arg2)
 
-            if len(self.game.chosen_tile.doors) == 1 and\
+            if len(self.game.chosen_tile.doors) == 1 and \
                     self.game.chosen_tile.name != "Foyer":
                 self.game.state = "Choosing Door"
                 self.game.get_game()
@@ -926,7 +1048,8 @@ class Commands(cmd.Cmd):
 
     def do_bury(self, line):
         """Buries the totem. (Player must be in the
-         graveyard and will have to resolve a dev card)"""
+         graveyard and will have to resolve a dev card)
+         """
         if self.game.state == "Moving":
             self.game.bury_totem()
         else:
@@ -946,8 +1069,14 @@ class Commands(cmd.Cmd):
         self.game.plot_data()
         return True
 
-    def do_extract(self, line):
-        self.game.extract_data()
+    def do_extract(self, filename):
+        if not filename:
+            return print("Must enter a valid file name")
+        else:
+            try:
+                self.game.extract_data(filename)
+            except OSError as o:
+                print(f"Oh no an error {o}")
 
     def do_status(self, line):
         """Shows the status of the player"""
@@ -956,6 +1085,8 @@ class Commands(cmd.Cmd):
 
 
 if __name__ == '__main__':
+    import doctest
+    doctest.testmod(verbose=True)
     if len(sys.argv) > 1:
         Commands().onecmd(' '.join(sys.argv[1:]))
     else:
