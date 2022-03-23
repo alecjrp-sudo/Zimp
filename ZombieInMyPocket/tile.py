@@ -2,7 +2,8 @@ from directions import Direction as d
 
 
 class Tile:
-    def __init__(self, name, x=16, y=16, effect=None, doors=None, entrance=None):
+    def __init__(self, name, x=16, y=16, effect=None,
+                 doors=None, entrance=None):
         if doors is None:
             doors = []
         self.name = name
@@ -51,7 +52,8 @@ class Tile:
 
 
 class IndoorTile(Tile):
-    def __init__(self, name, effect=None, doors=None, x=16, y=16, entrance=None):
+    def __init__(self, name, effect=None,
+                 doors=None, x=16, y=16, entrance=None):
         if doors is None:
             doors = []
         self.type = "Indoor"
@@ -63,7 +65,8 @@ class IndoorTile(Tile):
 
 
 class OutdoorTile(Tile):
-    def __init__(self, name, effect=None, doors=None, x=16, y=16, entrance=None):
+    def __init__(self, name, effect=None,
+                 doors=None, x=16, y=16, entrance=None):
         if doors is None:
             doors = []
         self.type = "Outdoor"

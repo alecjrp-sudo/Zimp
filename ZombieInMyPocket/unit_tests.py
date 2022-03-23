@@ -2,6 +2,8 @@ import unittest
 import main as m
 from player import Player
 from directions import Direction as d
+import os
+from os.path import exists
 
 
 class MyTestCase(unittest.TestCase):
@@ -93,6 +95,74 @@ class MyTestCase(unittest.TestCase):
         tile.rotate_tile()
 
         assert tile.doors[0] == d.NORTH
+
+    def test_db_connection(self):
+        expected = True
+
+        actual = self.game.connect_db()
+
+        assert expected == actual
+
+    def test_db_table_exists(self):
+        expected = True
+
+        self.game.connect_db()
+        actual = self.game.check_table_exists()
+
+        assert expected == actual
+
+    def test_delete_data(self):
+        expected = []
+
+        self.game.delete_data()
+        actual = self.game.get_data()
+
+        assert expected == actual
+
+    def test_db_data_input(self):
+        expected = (5, 10, 6)
+
+        self.game.delete_data()
+        self.game.place_tile(16, 16)
+        self.game.player.zombies_killed = 5
+        self.game.player.health_lost = 10
+        self.game.player.move_count = 6
+        self.game.input_data()
+        actual = self.game.get_data()
+
+        assert expected == actual[0]
+
+    def test_extract_data(self):
+        expected = True
+
+        if exists(r'additional_files\player_stats.xlsx'):
+            os.remove(r'additional_files\player_stats.xlsx')
+        self.game.extract_data()
+        actual = exists(r'additional_files\player_stats.xlsx')
+
+        assert expected == actual
+
+    def test_player_cant_cower_when_not_moving(self):
+        expected = self.game.player.get_health()
+
+        self.game.trigger_cower()
+        actual = self.game.player.get_health()
+
+        assert expected == actual
+
+    def test_resolving_door_to_input(self):
+        expected = [d.NORTH, d.WEST]
+
+        actual = self.game.resolve_doors(1, 0, 0, 1)
+
+        assert expected == actual
+
+    def test_player_cant_attack_when_in_wrong_state(self):
+        expected = False
+
+        actual = self.game.trigger_attack()
+
+        assert expected == actual
 
     def test_placing_tile(self):
         result = False

@@ -3,9 +3,9 @@ class Player:
                  zombies_killed=0, health_lost=0, move_count=0):
         self.attack = attack
         self.health = health
-        self.x = x  # x Will represent the players position horizontally starts at 16
-        self.y = y  # y will represent the players position vertically starts at 16
-        self.items = []  # Holds the players items. Can hold 2 items at a time
+        self.x = x
+        self.y = y
+        self.items = []
         self.has_totem = has_totem
         self.zombies_killed = zombies_killed
         self.health_lost = health_lost
