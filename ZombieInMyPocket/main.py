@@ -48,6 +48,8 @@ class Game:
         self.connection = connection
 
     def plot_data(self):
+        if self.connection is None:
+            self.connect_db()
         cursor = self.connection.cursor()
         query = "SELECT COUNT(session_id), SUM(zombies_killed)," \
                 " SUM(health_lost)," \
@@ -134,6 +136,8 @@ class Game:
             return True
 
     def check_table_exists(self):
+        if self.connection is None:
+            self.connect_db()
         check = """SELECT count(name) FROM sqlite_master
          WHERE type='table' AND name='{playerStats}'"""
         cursor = self.connection.cursor()
@@ -146,6 +150,8 @@ class Game:
             return True
 
     def create_tables(self):
+        if self.connection is None:
+            self.connect_db()
         cursor = self.connection.cursor()
         table_command = """
         CREATE TABLE playerStats (
@@ -1070,6 +1076,7 @@ class Commands(cmd.Cmd):
         return True
 
     def do_extract(self, filename):
+        """Extracts data from the database to an Excel file"""
         if not filename:
             return print("Must enter a valid file name")
         else:
@@ -1085,8 +1092,8 @@ class Commands(cmd.Cmd):
 
 
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod(verbose=True)
+    # import doctest
+    # doctest.testmod(verbose=True)
     if len(sys.argv) > 1:
         Commands().onecmd(' '.join(sys.argv[1:]))
     else:
