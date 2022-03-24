@@ -1,3 +1,4 @@
+import os
 import pickle
 import random
 from directions import Direction as d
@@ -804,6 +805,8 @@ class Commands(cmd.Cmd):
     intro = 'Welcome, type help or ? to list the' \
             ' commands or start to start the game'
 
+    game_path = os.getcwd()
+
     def __init__(self):
         cmd.Cmd.__init__(self)
         self.prompt = "> "
@@ -812,6 +815,7 @@ class Commands(cmd.Cmd):
 
     def do_start(self, line):
         """Starts a new game"""
+        os.chdir(self.game_path)
         if self.game.state == "Starting":
             self.game.start_game()
             self.game.get_game()
@@ -1067,6 +1071,7 @@ class Commands(cmd.Cmd):
 
     def do_exit(self, line):
         """Exits the game without saving"""
+        os.chdir(self.game_path)
         if self.game.connection is None:
             self.game.connect_db()
             if self.game.check_table_exists() is False:
@@ -1077,6 +1082,7 @@ class Commands(cmd.Cmd):
 
     def do_extract(self, filename):
         """Extracts data from the database to an Excel file"""
+        os.chdir(self.game_path)
         if not filename:
             return print("Must enter a valid file name")
         else:
@@ -1090,10 +1096,39 @@ class Commands(cmd.Cmd):
         if self.game.state != "Game Over":
             self.game.get_player_status()
 
+    @staticmethod
+    def do_dir(line):
+        """Gets the current working directory"""
+        return print(os.getcwd())
+
+    @staticmethod
+    def do_cd(directory):
+        """Changes the current directory"""
+        if not directory:
+            return print("Must enter a valid file name")
+        else:
+            try:
+                os.chdir(directory)
+            except (OSError, FileNotFoundError) as o:
+                print(f"Oh no an error {o}")
+        return print(os.getcwd())
+
+    @staticmethod
+    def do_mkdir(name):
+        """Creates a new directory"""
+        if not name:
+            return print("Must enter a valid file name")
+        else:
+            try:
+                os.mkdir(name)
+            except (OSError, FileNotFoundError) as o:
+                print(f"Oh no an error {o}")
+        return print(os.listdir())
+
 
 if __name__ == '__main__':
-    # import doctest
-    # doctest.testmod(verbose=True)
+    #  import doctest
+    #  doctest.testmod(verbose=True)
     if len(sys.argv) > 1:
         Commands().onecmd(' '.join(sys.argv[1:]))
     else:
