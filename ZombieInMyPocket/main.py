@@ -64,6 +64,9 @@ class Game:
     def get_room_item(self, index):
         return self.__room_item[index]
 
+    def set_room_item(self, item):
+        self.__room_item = item
+
     def get_chosen_tile(self):
         return self.__chosen_tile
 
@@ -874,16 +877,24 @@ class Commands(cmd.Cmd):
                         and self.game.get_current_move_direction() == \
                         self.game.get_current_tile().get_entrance():
                     if self.game.check_entrances_align():
-                        self.game.place_tile(self.game.get_chosen_tile().get_x(),
-                                             self.game.get_chosen_tile().get_y())
-                        self.game.move_player(self.game.get_chosen_tile().get_x(),
-                                              self.game.get_chosen_tile().get_y())
+                        self.game.place_tile(self.game.get_chosen_tile()
+                                             .get_x(),
+                                             self.game.get_chosen_tile().
+                                             get_y())
+                        self.game.move_player(self.game.get_chosen_tile()
+                                              .get_x(),
+                                              self.game.get_chosen_tile()
+                                              .get_y())
                 elif self.game.check_doors_align(
                         self.game.get_current_move_direction()):
-                    self.game.place_tile(self.game.get_chosen_tile().get_x(),
-                                         self.game.get_chosen_tile().get_y())
-                    self.game.move_player(self.game.get_chosen_tile().get_x(),
-                                          self.game.get_chosen_tile().get_y())
+                    self.game.place_tile(self.game.get_chosen_tile()
+                                         .get_x(),
+                                         self.game.get_chosen_tile()
+                                         .get_y())
+                    self.game.move_player(self.game.get_chosen_tile()
+                                          .get_x(),
+                                          self.game.get_chosen_tile()
+                                          .get_y())
                 else:
                     print(" Must have at least one door"
                           " facing the way you came from")
@@ -1040,7 +1051,7 @@ class Commands(cmd.Cmd):
             self.game.drop_item(line)
             self.game.get_player().add_item(self.game.get_room_item(0),
                                             self.game.get_room_item(1))
-            self.game.__room_item = None
+            self.game.set_room_item(None)
             self.game.get_game()
 
     def do_draw(self, line):
@@ -1105,8 +1116,8 @@ class Commands(cmd.Cmd):
         """Exits the game without saving"""
         os.chdir(self.game_path)
         if self.game.get_con() is None:
-            self.game.__connect_db()
-            if self.game.__check_table_exists() is False:
+            self.game.connect_db()
+            if self.game.check_table_exists() is False:
                 self.game.create_tables()
         self.game.input_data()
         self.game.plot_data()
