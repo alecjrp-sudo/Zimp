@@ -104,7 +104,7 @@ class MyTestCase(unittest.TestCase):
         assert expected == actual
 
     def test_db_table_exists(self):
-        expected = True
+        expected = False
 
         self.game.connect_db()
         actual = self.game.check_table_exists()

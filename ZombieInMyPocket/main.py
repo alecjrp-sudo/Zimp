@@ -1105,8 +1105,8 @@ class Commands(cmd.Cmd):
         """Exits the game without saving"""
         os.chdir(self.game_path)
         if self.game.get_con() is None:
-            self.game.connect_db()
-            if self.game.check_table_exists() is False:
+            self.game.__connect_db()
+            if self.game.__check_table_exists() is False:
                 self.game.create_tables()
         self.game.input_data()
         self.game.plot_data()
