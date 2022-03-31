@@ -176,10 +176,10 @@ class Game:
         cursor.execute(check)
         if cursor.fetchone()[0] == 1:
             cursor.close()
-            return False
+            return True
         else:
             cursor.close()
-            return True
+            return False
 
     def create_tables(self):
         if self.__connection is None:
