@@ -17,9 +17,9 @@ class Game:
     >>> test_g = Game(Player())
     >>> test_g.get_time()
     9
-    >>> test_g.get_player().__health
+    >>> test_g.get_player().get_health()
     6
-    >>> test_g.get_player().__attack
+    >>> test_g.get_player().get_attack()
     1
     """
 
@@ -218,11 +218,11 @@ class Game:
         >>> test_g.start_game()
         >>> test_g.get_state()
         'Rotating'
-        >>> test_g.get_chosen_tile().__name
+        >>> test_g.get_chosen_tile().get_name()
         'Foyer'
-        >>> test_g.get_chosen_tile().__x
+        >>> test_g.get_chosen_tile().get_x()
         16
-        >>> test_g.get_chosen_tile().__y
+        >>> test_g.get_chosen_tile().get_y()
         16
         """
         self.load_tiles()
@@ -1163,8 +1163,8 @@ class Commands(cmd.Cmd):
 
 
 if __name__ == '__main__':
-    #  import doctest
-    #  doctest.testmod(verbose=True)
+    import doctest
+    doctest.testmod(verbose=True)
     if len(sys.argv) > 1:
         Commands().onecmd(' '.join(sys.argv[1:]))
     else:
