@@ -111,7 +111,7 @@ class Game:
     def get_data(self):
         if self.__connection is None:
             self.connect_db()
-            if self.check_table_exists() is True:
+            if self.check_table_exists() is False:
                 self.create_tables()
         cursor = self.__connection.cursor()
         query = "SELECT zombies_killed," \
@@ -126,7 +126,7 @@ class Game:
     def extract_data(self, filename):
         if self.__connection is None:
             self.connect_db()
-            if self.check_table_exists() is True:
+            if self.check_table_exists() is False:
                 self.create_tables()
         cursor = self.__connection.cursor()
         query = "SELECT COUNT(session_id), SUM(zombies_killed)," \
@@ -148,7 +148,7 @@ class Game:
     def delete_data(self):
         if self.__connection is None:
             self.connect_db()
-            if self.check_table_exists() is True:
+            if self.check_table_exists() is False:
                 self.create_tables()
         cursor = self.__connection.cursor()
         query = "DELETE FROM playerStats"
@@ -1172,10 +1172,20 @@ class Commands(cmd.Cmd):
                 print(f"Oh no an error {o}")
         return print(os.listdir())
 
+    def do_stats(self, line):
+        """Displays the stat graph on request"""
+        os.chdir(self.game_path)
+        if self.game.get_con() is None:
+            self.game.connect_db()
+            if self.game.check_table_exists() is False:
+                self.game.create_tables()
+        self.game.input_data()
+        self.game.plot_data()
+
 
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod(verbose=True)
+    #  import doctest
+    #  doctest.testmod(verbose=True)
     if len(sys.argv) > 1:
         Commands().onecmd(' '.join(sys.argv[1:]))
     else:
