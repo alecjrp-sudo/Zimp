@@ -111,8 +111,8 @@ class Game:
     def get_data(self):
         if self.__connection is None:
             self.connect_db()
-            if self.check_table_exists() is False:
-                self.create_tables()
+        if self.check_table_exists() is False:
+            self.create_tables()
         cursor = self.__connection.cursor()
         query = "SELECT zombies_killed," \
                 " health_lost," \
@@ -126,8 +126,8 @@ class Game:
     def extract_data(self, filename):
         if self.__connection is None:
             self.connect_db()
-            if self.check_table_exists() is False:
-                self.create_tables()
+        if self.check_table_exists() is False:
+            self.create_tables()
         cursor = self.__connection.cursor()
         query = "SELECT COUNT(session_id), SUM(zombies_killed)," \
                 " SUM(health_lost)," \
@@ -148,8 +148,8 @@ class Game:
     def delete_data(self):
         if self.__connection is None:
             self.connect_db()
-            if self.check_table_exists() is False:
-                self.create_tables()
+        if self.check_table_exists() is False:
+            self.create_tables()
         cursor = self.__connection.cursor()
         query = "DELETE FROM playerStats"
         cursor.execute(query)
@@ -174,7 +174,7 @@ class Game:
         if self.__connection is None:
             self.connect_db()
         check = """SELECT count(name) FROM sqlite_master
-         WHERE type='table' AND name='{playerStats}'"""
+         WHERE type='table' AND name='playerStats'"""
         cursor = self.__connection.cursor()
         cursor.execute(check)
         if cursor.fetchone()[0] == 1:
@@ -1117,8 +1117,8 @@ class Commands(cmd.Cmd):
         os.chdir(self.game_path)
         if self.game.get_con() is None:
             self.game.connect_db()
-            if self.game.check_table_exists() is False:
-                self.game.create_tables()
+        if self.game.check_table_exists() is False:
+            self.game.create_tables()
         self.game.input_data()
         self.game.plot_data()
         return True
@@ -1177,9 +1177,8 @@ class Commands(cmd.Cmd):
         os.chdir(self.game_path)
         if self.game.get_con() is None:
             self.game.connect_db()
-            if self.game.check_table_exists() is False:
-                self.game.create_tables()
-        self.game.input_data()
+        if self.game.check_table_exists() is False:
+            self.game.create_tables()
         self.game.plot_data()
 
 
