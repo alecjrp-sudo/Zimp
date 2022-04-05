@@ -13,7 +13,7 @@ import matplotlib.pyplot as p
 
 
 class Game:
-    """Creates a Game instance
+    """
     >>> test_g = Game(Player())
     >>> test_g.get_time()
     9
@@ -162,6 +162,8 @@ class Game:
         Opened database successfully
         True
         """
+        if not os.path.exists('database'):
+            os.mkdir('database')
         try:
             self.__connection = sqlite3.connect("database/player_stats.db")
         except Exception as e:
@@ -304,7 +306,7 @@ class Game:
         if self.get_current_tile().get_type() == "Indoor":
             if len(self.__indoor_tiles) == 0:
                 return print("No more indoor tiles")
-            if self.get_current_tile().get_name() == "Dining Room" \
+            elif self.get_current_tile().get_name() == "Dining Room" \
                     and self.__current_move_direction == \
                     self.get_current_tile().get_entrance():
                 t = [t for t in self.__outdoor_tiles if t.__name == "Patio"]
