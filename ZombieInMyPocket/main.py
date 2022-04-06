@@ -100,10 +100,10 @@ class Game:
                            health_lost, move_count]
                 }
         data_frame = pd.DataFrame(data=data)
+        p.style.use("ggplot")
 
         data_frame.plot.barh(x="Statistic",
                              y="Number",
-                             rot=70,
                              title="Total player statistics")
         p.tight_layout()
         p.show(block=True)
