@@ -7,7 +7,7 @@ import cmd
 import sys
 import sqlite3
 from player import Player
-from tile import OutdoorTile, IndoorTile
+from tile import IndoorTileFactory, OutdoorTileFactory
 from dev_card import DevCard
 import matplotlib.pyplot as p
 
@@ -298,12 +298,14 @@ class Game:
         for tile in tiles:
             doors = self.resolve_doors(tile[3], tile[4], tile[5], tile[6])
             if tile[2] == "Outdoor":
-                new_tile = OutdoorTile(tile[0], tile[1], doors)
+                factory = OutdoorTileFactory()
+                new_tile = factory.create_tile(tile[0], tile[1], doors)
                 if tile[0] == "Patio":
                     new_tile.set_entrance(d.NORTH)
                 self.__outdoor_tiles.append(new_tile)
             if tile[2] == "Indoor":
-                new_tile = IndoorTile(tile[0], tile[1], doors)
+                factory = IndoorTileFactory()
+                new_tile = factory.create_tile(tile[0], tile[1], doors)
                 if tile[0] == "Dining Room":
                     new_tile.set_entrance(d.NORTH)
                 self.__indoor_tiles.append(new_tile)

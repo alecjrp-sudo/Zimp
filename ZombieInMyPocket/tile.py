@@ -1,7 +1,10 @@
 from directions import Direction as d
+from abc import ABCMeta, abstractmethod
 
 
-class Tile:
+# Abstract Product
+class Tile(metaclass=ABCMeta):
+    @abstractmethod
     def __init__(self, name, x=16, y=16, effect=None,
                  __doors=None, entrance=None, tile_type=None):
         self.__type = tile_type
@@ -14,6 +17,9 @@ class Tile:
 
     def get_x(self):
         return self.__x
+
+    def get_type(self):
+        return self.__type
 
     def get_name(self):
         return self.__name
@@ -43,17 +49,17 @@ class Tile:
         self.__entrance = direction
 
     def rotate_entrance(self):
-        if self.__entrance == d.NORTH:
-            self.set_entrance(d.EAST)
-            return
         if self.__entrance == d.SOUTH:
             self.set_entrance(d.WEST)
             return
         if self.__entrance == d.EAST:
             self.set_entrance(d.SOUTH)
             return
-        else:
+        if self.__entrance == d.WEST:
             self.set_entrance(d.NORTH)
+            return
+        else:
+            self.set_entrance(d.EAST)
             return
 
     def rotate_tile(self):  # Will rotate the tile 1 position clockwise
@@ -68,21 +74,34 @@ class Tile:
                 self.change_door_position(self.__doors.index(door), d.NORTH)
 
 
+# Abstract Factory
+class TileFactory(metaclass=ABCMeta):
+    @abstractmethod
+    def create_tile(self, *args, **kwargs):
+        pass  # pragma: no cover
+
+
+# Concrete Factory
+class IndoorTileFactory(TileFactory):
+    def create_tile(self, *args, **kwargs):
+        return IndoorTile(*args, **kwargs)
+
+
+# Concrete Factory
+class OutdoorTileFactory(TileFactory):
+    def create_tile(self, *args, **kwargs):
+        return OutdoorTile(*args, **kwargs)
+
+
+# Concrete Product A
 class IndoorTile(Tile):
     def __init__(self, name, effect=None,
-                 __doors=None, x=16, y=16, entrance=None):
-        self.__type = "Indoor"
-        super().__init__(name, x, y, effect, __doors, entrance)
-
-    def get_type(self):
-        return self.__type
+                 __doors=None, x=16, y=16, entrance=None, tile_type="Indoor"):
+        super().__init__(name, x, y, effect, __doors, entrance, tile_type)
 
 
+# Concrete Product B
 class OutdoorTile(Tile):
     def __init__(self, name, effect=None,
-                 __doors=None, x=16, y=16, entrance=None):
-        self.__type = "Outdoor"
-        super().__init__(name, x, y, effect, __doors, entrance)
-
-    def get_type(self):
-        return self.__type
+                 __doors=None, x=16, y=16, entrance=None, tile_type="Outdoor"):
+        super().__init__(name, x, y, effect, __doors, entrance, tile_type)
