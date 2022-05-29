@@ -3,9 +3,8 @@ from directions import Direction as d
 
 class Tile:
     def __init__(self, name, x=16, y=16, effect=None,
-                 __doors=None, entrance=None):
-        if __doors is None:
-            __doors = []
+                 __doors=None, entrance=None, tile_type=None):
+        self.__type = tile_type
         self.__name = name
         self.__x = x  # x will represent the tiles position horizontally
         self.__y = y  # y will represent the tiles position vertically
@@ -53,7 +52,7 @@ class Tile:
         if self.__entrance == d.EAST:
             self.set_entrance(d.SOUTH)
             return
-        if self.__entrance == d.WEST:
+        else:
             self.set_entrance(d.NORTH)
             return
 
@@ -72,30 +71,18 @@ class Tile:
 class IndoorTile(Tile):
     def __init__(self, name, effect=None,
                  __doors=None, x=16, y=16, entrance=None):
-        if __doors is None:
-            __doors = []
         self.__type = "Indoor"
         super().__init__(name, x, y, effect, __doors, entrance)
 
     def get_type(self):
         return self.__type
 
-    def __repr__(self):
-        return f'{self.__name}, {self.__doors}, {self.__type},' \
-               f' {self.__x}, {self.__y}, {self.__effect} \n'
-
 
 class OutdoorTile(Tile):
     def __init__(self, name, effect=None,
                  __doors=None, x=16, y=16, entrance=None):
-        if __doors is None:
-            __doors = []
         self.__type = "Outdoor"
         super().__init__(name, x, y, effect, __doors, entrance)
 
     def get_type(self):
         return self.__type
-
-    def __repr__(self):
-        return f'{self.__name}, {self.__doors}, {self.__type},' \
-               f' {self.__x}, {self.__y}, {self.__effect} \n'

@@ -49,6 +49,12 @@ class Game:
         self.__room_item = None
         self.__connection = connection
 
+    def get_indoor_tiles(self):
+        return self.__indoor_tiles
+
+    def get_outdoor_tiles(self):
+        return self.__outdoor_tiles
+
     def get_state(self):
         return self.__state
 

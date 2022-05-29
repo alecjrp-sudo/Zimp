@@ -48,22 +48,6 @@ class MyTestCase(unittest.TestCase):
 
         assert expected == name
 
-    def test_indoor_tile_to_string(self):
-        expected = "Bathroom, [<Direction.WEST: 4>], Indoor, 16, 16, None"
-
-        actual = self.game.get_indoor_tiles()[0]
-        name = actual.to_string()
-
-        assert expected == name
-
-    def test_outdoor_tile_to_string(self):
-        expected = "Graveyard, [<Direction.NORTH: (1,)>, <Direction.EAST: (3,)>], Outdoor, 16, 16, Bury Totem"
-
-        actual = self.game.get_outdoor_tiles()[0]
-        name = actual.to_string()
-
-        assert expected == name
-
     def test_getting_tile_x(self):
         expected = 16
 
@@ -85,10 +69,17 @@ class MyTestCase(unittest.TestCase):
 
         assert expected == actual
 
-    def test_getting_tile_type(self):
+    def test_getting_outdoor_tile_type(self):
         expected = "Outdoor"
 
         actual = self.game.get_outdoor_tiles()[0].get_type()
+
+        assert expected == actual
+
+    def test_getting_indoor_tile_type(self):
+        expected = "Indoor"
+
+        actual = self.game.get_indoor_tiles()[0].get_type()
 
         assert expected == actual
 
