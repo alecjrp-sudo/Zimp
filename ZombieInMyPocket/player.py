@@ -1,3 +1,5 @@
+
+# Could apply the strategy design pattern to implement Hard and Impossible Mode
 class Player:
     def __init__(self, attack=1, health=6, x=16, y=16, has_totem=False,
                  zombies_killed=0, health_lost=0, move_count=0):

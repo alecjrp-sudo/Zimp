@@ -77,20 +77,20 @@ class Tile(metaclass=ABCMeta):
 # Abstract Factory
 class TileFactory(metaclass=ABCMeta):
     @abstractmethod
-    def create_tile(self, *args, **kwargs):
+    def create_tile(self, *args):
         pass  # pragma: no cover
 
 
 # Concrete Factory
 class IndoorTileFactory(TileFactory):
-    def create_tile(self, *args, **kwargs):
-        return IndoorTile(*args, **kwargs)
+    def create_tile(self, *args):
+        return IndoorTile(*args)
 
 
 # Concrete Factory
 class OutdoorTileFactory(TileFactory):
-    def create_tile(self, *args, **kwargs):
-        return OutdoorTile(*args, **kwargs)
+    def create_tile(self, *args):
+        return OutdoorTile(*args)
 
 
 # Concrete Product A
