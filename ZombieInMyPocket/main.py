@@ -48,6 +48,8 @@ class Game:
         self.__can_cower = can_cower
         self.__room_item = None
         self.__connection = connection
+        self.__indoor_tile_factory = IndoorTileFactory()
+        self.__outdoor_tile_factory = OutdoorTileFactory()
 
     def get_indoor_tiles(self):
         return self.__indoor_tiles
@@ -298,14 +300,12 @@ class Game:
         for tile in tiles:
             doors = self.resolve_doors(tile[3], tile[4], tile[5], tile[6])
             if tile[2] == "Outdoor":
-                factory = OutdoorTileFactory()
-                new_tile = factory.create_tile(tile[0], tile[1], doors)
+                new_tile = self.__outdoor_tile_factory.create_tile(tile[0], tile[1], doors)
                 if tile[0] == "Patio":
                     new_tile.set_entrance(d.NORTH)
                 self.__outdoor_tiles.append(new_tile)
             if tile[2] == "Indoor":
-                factory = IndoorTileFactory()
-                new_tile = factory.create_tile(tile[0], tile[1], doors)
+                new_tile = self.__indoor_tile_factory.create_tile(tile[0], tile[1], doors)
                 if tile[0] == "Dining Room":
                     new_tile.set_entrance(d.NORTH)
                 self.__indoor_tiles.append(new_tile)
