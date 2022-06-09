@@ -10,6 +10,8 @@ from player import Player
 from tile import IndoorTileFactory, OutdoorTileFactory
 from dev_card import DevCard
 import matplotlib.pyplot as p
+from Strategy import Context, OilCandleStrategy, GasolineCandleStrategy, ChainsawStrategy, \
+    MacheteStrategy, OtherWeapon, CanOfSoda
 
 
 class Game:
@@ -50,6 +52,7 @@ class Game:
         self.__connection = connection
         self.__indoor_tile_factory = IndoorTileFactory()
         self.__outdoor_tile_factory = OutdoorTileFactory()
+        self.__context = Context()
 
     def get_indoor_tiles(self):
         return self.__indoor_tiles
@@ -530,7 +533,7 @@ class Game:
         event = dev_card.get_event_at_time(time)
         if event[0] == "Nothing":
             print("There is nothing in this room")
-            if len(self.__chosen_tile.__doors) == 1 \
+            if len(self.__chosen_tile.get_doors()) == 1 \
                     and self.__chosen_tile.get_name() != "Foyer":
                 self.__state = "Choosing Door"
                 self.get_game()
@@ -603,6 +606,12 @@ class Game:
             self.__current_zombies = int(event[1])
             self.__state = "Attacking"  # Create CMD for attacking zombies
 
+    def use_item(self, strategy, item, state):
+        self.__context.set_strategy(strategy)
+        self.drop_item(item)
+        self.__state = state
+        return self.__context.execute_attack_strategy()
+
     def trigger_attack(self, *item):
         if self.__state != "Attacking":
             return False
@@ -610,44 +619,38 @@ class Game:
         zombies = self.__current_zombies
         if len(item) == 2:  # If the player is using two items
             if "Oil" in item and "Candle" in item:
-                print("You used the oil and the candle"
-                      " to attack the zombies,"
-                      " it kills all of them")
-                self.drop_item("Oil")
-                self.__state = "Moving"
+                self.use_item(OilCandleStrategy, "Oil", "Moving")
                 return
             elif "Gasoline" in item and "Candle" in item:
-                print("You used the gasoline and the "
-                      "candle to attack the zombies,"
-                      " it kills all of them")
-                self.drop_item("Gasoline")
-                self.__state = "Moving"
+                self.use_item(GasolineCandleStrategy, "Gasoline", "Moving")
                 return
             elif "Gasoline" in item and "Chainsaw" in item:
                 chainsaw_charge = self.__player.get_item_charges("Chainsaw")
                 self.__player.set_item_charges("Chainsaw", chainsaw_charge + 2)
-                player_attack += 3
-                self.drop_item("Gasoline")
+                self.use_item(ChainsawStrategy, "Gasoline", "Moving")
                 self.__player.use_item_charge("Chainsaw")
             else:
                 print("These items cannot be used together, try again")
                 return
         elif len(item) == 1:
             if "Machete" in item:
-                player_attack += 2
+                self.__context.set_strategy(MacheteStrategy)
+                player_attack += self.__context.execute_attack_strategy()
             elif "Chainsaw" in item:
                 if self.__player.get_item_charges("Chainsaw") > 0:
-                    player_attack += 3
+                    self.__context.set_strategy(ChainsawStrategy)
+                    player_attack += self.__context.execute_attack_strategy()
                     self.__player.use_item_charge("Chainsaw")
                 else:
                     print("This item has no charges left")
             elif "Golf Club" in item or "Grisly Femur" in \
                     item or "Board With Nails" in item:
-                player_attack += 1
+                self.__context.set_strategy(OtherWeapon)
+                player_attack += self.__context.execute_attack_strategy()
             elif "Can of Soda" in item:
-                self.__player.add_health(2)
+                self.__context.set_strategy(CanOfSoda)
+                self.__player.add_health(self.__context.execute_attack_strategy())
                 self.drop_item("Can of Soda")
-                print("Used Can of Soda, gained 2 health")
                 return
             elif "Oil" in item:
                 self.trigger_run(0)
