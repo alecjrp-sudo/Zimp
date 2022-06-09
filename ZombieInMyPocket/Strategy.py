@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 
 class Context:
     def __init__(self):
+        self._strategies = {5: GasolineCandleStrategy()}  # Pool of strategies
         self._strategy = None
 
     def set_strategy(self, strategy):
@@ -14,8 +15,42 @@ class Context:
 
 class AttackStrategy(metaclass=ABCMeta):
     @abstractmethod
+    def __init__(self):
+        self.__item_values = {"Gasoline": 1, "Chainsaw": 9, "Oil": 3, "Candle": 4, "OilCandle": 7,
+                              "GasolineCandle": 5, "GasolineChainsaw": 10}
+
+    @abstractmethod
+    def calculate(self, *items):
+        pass
+
+    @abstractmethod
     def execute(self):
         pass
+
+
+class TwoItemAttackStrategy(AttackStrategy):
+    def __init__(self):
+        super().__init__()
+
+    def calculate(self, item1, item2):
+        a = self.__item_values.get(item1)
+        b = self.__item_values.get(item2)
+        return a + b
+
+    def execute(self):
+        pass
+
+
+class OneItemAttackStrategy(AttackStrategy):
+    def __init__(self):
+        super().__init__()
+
+    def calculate(self, item1):
+        return self.__item_values.get(item1)
+
+    def execute(self):
+        pass
+
 
 
 class OilCandleStrategy(AttackStrategy):

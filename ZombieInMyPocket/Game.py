@@ -614,7 +614,7 @@ class Game:
             return False
         player_attack = self.__player.get_attack()
         zombies = self.__current_zombies
-        if len(item) == 2:  # If the player is using two items
+        if len(item) == 2:  # Two item strategy
             if "Oil" in item and "Candle" in item:
                 self.use_item(OilCandleStrategy, "Oil", "Moving")
                 return
@@ -629,7 +629,7 @@ class Game:
             else:
                 print("These items cannot be used together, try again")
                 return
-        elif len(item) == 1:
+        elif len(item) == 1:  # One item strategy
             if "Machete" in item:
                 self.__context.set_strategy(MacheteStrategy)
                 player_attack += self.__context.execute_attack_strategy()
