@@ -8,7 +8,7 @@ from tile import IndoorTileFactory, OutdoorTileFactory
 from dev_card import DevCard
 import matplotlib.pyplot as p
 from Strategy import Context, OilCandleStrategy, GasolineCandleStrategy, ChainsawStrategy, \
-    MacheteStrategy, OtherWeapon, CanOfSoda
+    MacheteStrategy, OtherWeapon, CanOfSoda, TwoItemAttackStrategy, OneItemAttackStrategy
 
 
 class Game:
@@ -615,48 +615,13 @@ class Game:
         player_attack = self.__player.get_attack()
         zombies = self.__current_zombies
         if len(item) == 2:  # Two item strategy
-            if "Oil" in item and "Candle" in item:
-                self.use_item(OilCandleStrategy, "Oil", "Moving")
-                return
-            elif "Gasoline" in item and "Candle" in item:
-                self.use_item(GasolineCandleStrategy, "Gasoline", "Moving")
-                return
-            elif "Gasoline" in item and "Chainsaw" in item:
-                chainsaw_charge = self.__player.get_item_charges("Chainsaw")
-                self.__player.set_item_charges("Chainsaw", chainsaw_charge + 2)
-                self.use_item(ChainsawStrategy, "Gasoline", "Moving")
-                self.__player.use_item_charge("Chainsaw")
-            else:
-                print("These items cannot be used together, try again")
-                return
+            strategy = TwoItemAttackStrategy()
+            self.__context.set_strategy(strategy.calculate(*item))
+            self.__context.execute_attack_strategy()
         elif len(item) == 1:  # One item strategy
-            if "Machete" in item:
-                self.__context.set_strategy(MacheteStrategy)
-                player_attack += self.__context.execute_attack_strategy()
-            elif "Chainsaw" in item:
-                if self.__player.get_item_charges("Chainsaw") > 0:
-                    self.__context.set_strategy(ChainsawStrategy)
-                    player_attack += self.__context.execute_attack_strategy()
-                    self.__player.use_item_charge("Chainsaw")
-                else:
-                    print("This item has no charges left")
-            elif "Golf Club" in item or "Grisly Femur" in \
-                    item or "Board With Nails" in item:
-                self.__context.set_strategy(OtherWeapon)
-                player_attack += self.__context.execute_attack_strategy()
-            elif "Can of Soda" in item:
-                self.__context.set_strategy(CanOfSoda)
-                self.__player.add_health(self.__context.execute_attack_strategy())
-                self.drop_item("Can of Soda")
-                return
-            elif "Oil" in item:
-                self.trigger_run(0)
-                return
-            else:
-                print("You cannot use this item right now, try again")
-                return
+            strategy = OneItemAttackStrategy()
+            self.__context.set_strategy(strategy.calculate(item))
 
-        # Calculate damage on the player
         damage = zombies - player_attack
         if damage < 0:
             damage = 0
