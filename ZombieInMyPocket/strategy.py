@@ -3,14 +3,14 @@ from abc import ABCMeta, abstractmethod
 
 class Context:
     def __init__(self):
-        self._strategies = {5: GasolineCandleStrategy(),
-                            51: ChainsawStrategy(),
-                            52: ChainsawStrategy(),
-                            53: ChainsawStrategy(),
-                            7: OilCandleStrategy(),
-                            30: MacheteStrategy(),
-                            31: OtherWeaponStrategy(),
-                            50: EmptyChainsawStrategy()}
+        self._strategies = {18: GasolineCandleStrategy(),
+                            5: ChainsawStrategy(),
+                            6: ChainsawStrategy(),
+                            7: ChainsawStrategy(),
+                            24: OilCandleStrategy(),
+                            257: MacheteStrategy(),
+                            513: OtherWeaponStrategy(),
+                            4: EmptyChainsawStrategy()}
         self._strategy = None
 
     def set_strategy(self, value):
@@ -27,11 +27,11 @@ class Context:
 class AttackStrategy(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self):
-        self._item_values = {"Gasoline": 1, "Chainsaw": 50,
-                             "Oil": 3, "Candle": 4, "OilCandle": 7,
-                             "GasolineCandle": 5, "GasolineChainsaw": 53,
-                             "Machete": 29, "Golf Club": 30,
-                             "Grisly Femur": 30, "Board With Nails": 30}
+        self._item_values = {"Gasoline": 2, "Chainsaw": 4,
+                             "Oil": 8, "Candle": 16, "OilCandle": 32,
+                             "GasolineCandle": 64, "GasolineChainsaw": 128,
+                             "Machete": 256, "Golf Club": 512,
+                             "Grisly Femur": 512, "Board With Nails": 512}
 
     @abstractmethod
     def calculate(self, *items):
