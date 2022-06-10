@@ -3,9 +3,14 @@ from abc import ABCMeta, abstractmethod
 
 class Context:
     def __init__(self):
-        self._strategies = {5: GasolineCandleStrategy(), 51: ChainsawStrategy(),
-                            52: ChainsawStrategy(), 53: ChainsawStrategy(), 7: OilCandleStrategy(),
-                            30: MacheteStrategy(), 31: OtherWeaponStrategy(), 50: EmptyChainsawStrategy()}
+        self._strategies = {5: GasolineCandleStrategy(),
+                            51: ChainsawStrategy(),
+                            52: ChainsawStrategy(),
+                            53: ChainsawStrategy(),
+                            7: OilCandleStrategy(),
+                            30: MacheteStrategy(),
+                            31: OtherWeaponStrategy(),
+                            50: EmptyChainsawStrategy()}
         self._strategy = None
 
     def set_strategy(self, value):
@@ -22,8 +27,10 @@ class Context:
 class AttackStrategy(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self):
-        self._item_values = {"Gasoline": 1, "Chainsaw": 50, "Oil": 3, "Candle": 4, "OilCandle": 7,
-                             "GasolineCandle": 5, "GasolineChainsaw": 53, "Machete": 29, "Golf Club": 30,
+        self._item_values = {"Gasoline": 1, "Chainsaw": 50,
+                             "Oil": 3, "Candle": 4, "OilCandle": 7,
+                             "GasolineCandle": 5, "GasolineChainsaw": 53,
+                             "Machete": 29, "Golf Club": 30,
                              "Grisly Femur": 30, "Board With Nails": 30}
 
     @abstractmethod
@@ -57,7 +64,8 @@ class OneItemAttackStrategy(AttackStrategy):
         self._charges = charges
 
     def calculate(self, item):
-        value = self._item_values.get(item[0][0][0]) + self._charges
+        value = self._item_values.get(item[0][0][0]) \
+                + self._charges
         return value
 
 
@@ -77,8 +85,9 @@ class GasolineCandleStrategy(ItemStrategy):
         super().__init__()
 
     def execute(self):
-        print("You used the gasoline and the "
-              "candle to attack the zombies,"
+        print("You used the gasoline"
+              " and the candle to attack"
+              " the zombies,"
               " it kills all of them")
         return self._damage_buff
 

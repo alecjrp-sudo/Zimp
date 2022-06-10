@@ -7,7 +7,7 @@ from player import Player
 from tile import IndoorTileFactory, OutdoorTileFactory
 from dev_card import DevCard
 import matplotlib.pyplot as p
-from strategy import Context, TwoItemAttackStrategy, OneItemAttackStrategy, ChainsawStrategy
+from strategy import Context, TwoItemAttackStrategy, OneItemAttackStrategy
 
 
 class Game:
@@ -305,12 +305,14 @@ class Game:
         for tile in tiles:
             doors = self.resolve_doors(tile[3], tile[4], tile[5], tile[6])
             if tile[2] == "Outdoor":
-                new_tile = self.__outdoor_tile_factory.create_tile(tile[0], tile[1], doors)
+                new_tile = self.__outdoor_tile_factory.\
+                    create_tile(tile[0], tile[1], doors)
                 if tile[0] == "Patio":
                     new_tile.set_entrance(d.NORTH)
                 self.__outdoor_tiles.append(new_tile)
             if tile[2] == "Indoor":
-                new_tile = self.__indoor_tile_factory.create_tile(tile[0], tile[1], doors)
+                new_tile = self.__indoor_tile_factory.\
+                    create_tile(tile[0], tile[1], doors)
                 if tile[0] == "Dining Room":
                     new_tile.set_entrance(d.NORTH)
                 self.__indoor_tiles.append(new_tile)
@@ -581,7 +583,8 @@ class Game:
             print(f"There is an item in this room: {next_card.get_item()}")
             if len(self.__player.get_items()) < 2:
                 self.__dev_cards.pop(0)
-                self.__player.add_item(next_card.get_item(), next_card.get_charges())
+                self.__player.add_item(next_card.get_item(),
+                                       next_card.get_charges())
                 print(f"You picked up the {next_card.get_item()}")
                 if len(self.__chosen_tile.get_doors()) == 1 \
                         and self.__chosen_tile.get_name() != "Foyer":
