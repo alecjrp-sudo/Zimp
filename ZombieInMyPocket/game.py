@@ -7,8 +7,7 @@ from player import Player
 from tile import IndoorTileFactory, OutdoorTileFactory
 from dev_card import DevCard
 import matplotlib.pyplot as p
-from Strategy import Context, OilCandleStrategy, GasolineCandleStrategy, ChainsawStrategy, \
-    MacheteStrategy, OtherWeapon, CanOfSoda, TwoItemAttackStrategy, OneItemAttackStrategy
+from strategy import Context, TwoItemAttackStrategy, OneItemAttackStrategy
 
 
 class Game:
@@ -56,6 +55,12 @@ class Game:
 
     def get_outdoor_tiles(self):
         return self.__outdoor_tiles
+
+    def get_current_zombies(self):
+        return self.__current_zombies
+
+    def set_current_zombies(self, value):
+        self.__current_zombies = value
 
     def get_state(self):
         return self.__state
@@ -603,24 +608,19 @@ class Game:
             self.__current_zombies = int(event[1])
             self.__state = "Attacking"  # Create CMD for attacking zombies
 
-    def use_item(self, strategy, item, state):
-        self.__context.set_strategy(strategy)
-        self.drop_item(item)
-        self.__state = state
-        return self.__context.execute_attack_strategy()
-
     def trigger_attack(self, *item):
         if self.__state != "Attacking":
             return False
         player_attack = self.__player.get_attack()
         zombies = self.__current_zombies
-        if len(item) == 2:  # Two item strategy
+        if len(item[0]) == 2:  # Two item strategy
             strategy = TwoItemAttackStrategy()
             self.__context.set_strategy(strategy.calculate(*item))
-            self.__context.execute_attack_strategy()
-        elif len(item) == 1:  # One item strategy
+            player_attack += self.__context.execute_attack_strategy()
+        elif len(item[0]) == 1:  # One item strategy
             strategy = OneItemAttackStrategy()
             self.__context.set_strategy(strategy.calculate(item))
+            player_attack += self.__context.execute_attack_strategy()
 
         damage = zombies - player_attack
         if damage < 0:

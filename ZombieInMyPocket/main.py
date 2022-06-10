@@ -4,7 +4,7 @@ from directions import Direction as d
 import cmd
 import sys
 from player import Player
-from Game import Game
+from game import Game
 
 
 class Commands(cmd.Cmd):
