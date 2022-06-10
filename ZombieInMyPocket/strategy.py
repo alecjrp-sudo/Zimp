@@ -3,30 +3,32 @@ from abc import ABCMeta, abstractmethod
 
 class Context:
     def __init__(self):
-        self._strategies = {5: GasolineCandleStrategy(), 10: ChainsawStrategy(),
-                            7: OilCandleStrategy(), 29: MacheteStrategy(), 30: OtherWeapon()}
+        self._strategies = {5: GasolineCandleStrategy(), 51: ChainsawStrategy(),
+                            52: ChainsawStrategy(), 53: ChainsawStrategy(), 7: OilCandleStrategy(),
+                            30: MacheteStrategy(), 31: OtherWeapon(), 50: EmptyChainsaw()}
         self._strategy = None
 
     def set_strategy(self, value):
-        self._strategy = self._strategies.get(value)
+        if value not in self._strategies:
+            return False
+        else:
+            self._strategy = self._strategies.get(value)
+            return True
 
     def execute_attack_strategy(self):
         return self._strategy.execute()
-
-    def get_strategy(self):
-        return self._strategy
 
 
 class AttackStrategy(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self):
-        self._item_values = {"Gasoline": 1, "Chainsaw": 9, "Oil": 3, "Candle": 4, "OilCandle": 7,
-                             "GasolineCandle": 5, "GasolineChainsaw": 10, "Machete": 29, "Golf Club": 30,
+        self._item_values = {"Gasoline": 1, "Chainsaw": 50, "Oil": 3, "Candle": 4, "OilCandle": 7,
+                             "GasolineCandle": 5, "GasolineChainsaw": 53, "Machete": 29, "Golf Club": 30,
                              "Grisly Femur": 30, "Board With Nails": 30}
 
     @abstractmethod
     def calculate(self, *items):
-        pass
+        pass # pragma: no cover
 
 
 class ItemStrategy(metaclass=ABCMeta):
@@ -36,7 +38,7 @@ class ItemStrategy(metaclass=ABCMeta):
 
     @abstractmethod
     def execute(self):
-        pass
+        pass # pragma: no cover
 
 
 class TwoItemAttackStrategy(AttackStrategy):
@@ -50,11 +52,13 @@ class TwoItemAttackStrategy(AttackStrategy):
 
 
 class OneItemAttackStrategy(AttackStrategy):
-    def __init__(self):
+    def __init__(self, charges):
         super().__init__()
+        self._charges = charges
 
     def calculate(self, item1):
-        return self._item_values.get(item1[0][0][0])
+        value = self._item_values.get(item1[0][0][0]) + self._charges
+        return value
 
 
 class OilCandleStrategy(ItemStrategy):
@@ -84,7 +88,15 @@ class ChainsawStrategy(ItemStrategy):
         self.damage_buff = 3
 
     def execute(self):
-        print("You used the chainsaw, gain 3 attack")
+        return self.damage_buff
+
+
+class EmptyChainsaw(ItemStrategy):
+    def __init__(self):
+        self.damage_buff = 0
+
+    def execute(self):
+        print("Chainsaw is empty")
         return self.damage_buff
 
 
@@ -100,7 +112,7 @@ class MacheteStrategy(ItemStrategy):
 class OtherWeapon(ItemStrategy):
     def __init__(self):
         super().__init__()
-        self.damage_buff = 2
+        self.damage_buff = 1
 
     def execute(self):
         print("You used a weapon, gain 1 attack")

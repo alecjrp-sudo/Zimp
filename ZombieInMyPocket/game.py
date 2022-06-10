@@ -7,7 +7,7 @@ from player import Player
 from tile import IndoorTileFactory, OutdoorTileFactory
 from dev_card import DevCard
 import matplotlib.pyplot as p
-from strategy import Context, TwoItemAttackStrategy, OneItemAttackStrategy
+from strategy import Context, TwoItemAttackStrategy, OneItemAttackStrategy, ChainsawStrategy
 
 
 class Game:
@@ -616,16 +616,18 @@ class Game:
         if len(item) != 0:
             if len(item[0]) == 2:  # Two item strategy
                 strategy = TwoItemAttackStrategy()
-                self.__context.set_strategy(strategy.calculate(*item))
-                player_attack += self.__context.execute_attack_strategy()
-                self.drop_item(item[0][0][0])
-                self.drop_item(item[0][0][0])
-                self.set_state("Moving")
-            elif len(item[0]) == 1:  # One item strategy
-                strategy = OneItemAttackStrategy()
+                if self.__context.set_strategy(strategy.calculate(*item)):
+                    player_attack += self.__context.execute_attack_strategy()
+                    self.drop_item(item[0][0][0])
+                    self.drop_item(item[0][0][0])
+                else:
+                    return
+            if len(item[0]) == 1:  # One item strategy
+                print(item)
+                strategy = OneItemAttackStrategy(item[0][0][1])
                 self.__context.set_strategy(strategy.calculate(item))
                 player_attack += self.__context.execute_attack_strategy()
-                self.set_state("Moving")
+            self.set_state("Moving")
 
         damage = zombies - player_attack
         if damage < 0:
