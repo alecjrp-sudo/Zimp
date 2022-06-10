@@ -5,7 +5,7 @@ class Context:
     def __init__(self):
         self._strategies = {5: GasolineCandleStrategy(), 51: ChainsawStrategy(),
                             52: ChainsawStrategy(), 53: ChainsawStrategy(), 7: OilCandleStrategy(),
-                            30: MacheteStrategy(), 31: OtherWeapon(), 50: EmptyChainsaw()}
+                            30: MacheteStrategy(), 31: OtherWeaponStrategy(), 50: EmptyChainsawStrategy()}
         self._strategy = None
 
     def set_strategy(self, value):
@@ -28,17 +28,17 @@ class AttackStrategy(metaclass=ABCMeta):
 
     @abstractmethod
     def calculate(self, *items):
-        pass # pragma: no cover
+        pass  # pragma: no cover
 
 
 class ItemStrategy(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self):
-        self.damage_buff = 10
+        self._damage_buff = 10
 
     @abstractmethod
     def execute(self):
-        pass # pragma: no cover
+        pass  # pragma: no cover
 
 
 class TwoItemAttackStrategy(AttackStrategy):
@@ -56,8 +56,8 @@ class OneItemAttackStrategy(AttackStrategy):
         super().__init__()
         self._charges = charges
 
-    def calculate(self, item1):
-        value = self._item_values.get(item1[0][0][0]) + self._charges
+    def calculate(self, item):
+        value = self._item_values.get(item[0][0][0]) + self._charges
         return value
 
 
@@ -69,7 +69,7 @@ class OilCandleStrategy(ItemStrategy):
         print("You used the oil and the candle"
               " to attack the zombies,"
               " it kills all of them")
-        return self.damage_buff
+        return self._damage_buff
 
 
 class GasolineCandleStrategy(ItemStrategy):
@@ -80,40 +80,40 @@ class GasolineCandleStrategy(ItemStrategy):
         print("You used the gasoline and the "
               "candle to attack the zombies,"
               " it kills all of them")
-        return self.damage_buff
+        return self._damage_buff
 
 
 class ChainsawStrategy(ItemStrategy):
     def __init__(self):
-        self.damage_buff = 3
+        self._damage_buff = 3
 
     def execute(self):
-        return self.damage_buff
+        return self._damage_buff
 
 
-class EmptyChainsaw(ItemStrategy):
+class EmptyChainsawStrategy(ItemStrategy):
     def __init__(self):
-        self.damage_buff = 0
+        self._damage_buff = 0
 
     def execute(self):
         print("Chainsaw is empty")
-        return self.damage_buff
+        return self._damage_buff
 
 
 class MacheteStrategy(ItemStrategy):
     def __init__(self):
-        self.damage_buff = 2
+        self._damage_buff = 2
 
     def execute(self):
         print("You used the Machete, gain 2 attack")
-        return int(self.damage_buff)
+        return int(self._damage_buff)
 
 
-class OtherWeapon(ItemStrategy):
+class OtherWeaponStrategy(ItemStrategy):
     def __init__(self):
         super().__init__()
-        self.damage_buff = 1
+        self._damage_buff = 1
 
     def execute(self):
         print("You used a weapon, gain 1 attack")
-        return self.damage_buff
+        return self._damage_buff
