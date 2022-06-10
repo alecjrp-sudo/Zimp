@@ -613,14 +613,19 @@ class Game:
             return False
         player_attack = self.__player.get_attack()
         zombies = self.__current_zombies
-        if len(item[0]) == 2:  # Two item strategy
-            strategy = TwoItemAttackStrategy()
-            self.__context.set_strategy(strategy.calculate(*item))
-            player_attack += self.__context.execute_attack_strategy()
-        elif len(item[0]) == 1:  # One item strategy
-            strategy = OneItemAttackStrategy()
-            self.__context.set_strategy(strategy.calculate(item))
-            player_attack += self.__context.execute_attack_strategy()
+        if len(item) != 0:
+            if len(item[0]) == 2:  # Two item strategy
+                strategy = TwoItemAttackStrategy()
+                self.__context.set_strategy(strategy.calculate(*item))
+                player_attack += self.__context.execute_attack_strategy()
+                self.drop_item(item[0][0][0])
+                self.drop_item(item[0][0][0])
+                self.set_state("Moving")
+            elif len(item[0]) == 1:  # One item strategy
+                strategy = OneItemAttackStrategy()
+                self.__context.set_strategy(strategy.calculate(item))
+                player_attack += self.__context.execute_attack_strategy()
+                self.set_state("Moving")
 
         damage = zombies - player_attack
         if damage < 0:

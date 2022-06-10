@@ -32,7 +32,7 @@ class AttackStrategy(metaclass=ABCMeta):
 class ItemStrategy(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self):
-        self.damage_buff = 0
+        self.damage_buff = 10
 
     @abstractmethod
     def execute(self):

@@ -16,36 +16,8 @@ class MyTestCase(unittest.TestCase):
         del self.game
         del self.player
 
-    # def test_machete(self):
-    #     self.player.add_item("Machete", 1)
-    #     self.game.trigger_attack(self.player.get_items())
-    #     expected_health = 4
-    #
-    #     actual_health = self.player.get_health()
-    #
-    #     assert expected_health == actual_health
-
-    # def test_grisly_femur(self):
-    #     self.player.add_item("Grisly Femur", 1)
-    #     self.game.trigger_attack(self.player.get_items())
-    #     expected_health = 4
-    #
-    #     actual_health = self.player.get_health()
-    #
-    #     assert expected_health == actual_health
-
-    # def test_golf_club(self):
-    #     self.player.add_item("Golf Club", 1)
-    #     self.game.trigger_attack(self.player.get_items())
-    #     expected_health = 4
-    #
-    #     actual_health = self.player.get_health()
-    #
-    #     assert expected_health == actual_health
-
-    def test_oil_and_candle(self):
-        self.player.add_item("Oil", 1)
-        self.player.add_item("Candle", 1)
+    def test_machete(self):
+        self.player.add_item("Machete", 1)
         self.game.trigger_attack(self.player.get_items())
         expected_health = 4
 
@@ -53,31 +25,62 @@ class MyTestCase(unittest.TestCase):
 
         assert expected_health == actual_health
 
-    # def test_candle_and_gasoline(self):
-    #     self.player.add_item("Machete", 1)
-    #     self.game.trigger_attack(self.player.get_items())
-    #     expected_health = 4
-    #
-    #     actual_health = self.player.get_health()
-    #
-    #     assert expected_health == actual_health
+    def test_grisly_femur(self):
+        self.player.add_item("Grisly Femur", 1)
+        self.game.trigger_attack(self.player.get_items())
+        expected_health = 4
 
-    # def test_chainsaw(self):
-    #     self.player.add_item("Machete", 1)
-    #     self.game.trigger_attack(self.player.get_items())
-    #     expected_health = 4
-    #
-    #     actual_health = self.player.get_health()
-    #
-    #     assert expected_health == actual_health
+        actual_health = self.player.get_health()
 
-    # def test_no_item(self):
-    #     self.game.trigger_attack()
-    #     expected_health = 2
-    #
-    #     actual_health = self.player.get_health()
-    #
-    #     assert expected_health == actual_health
+        assert expected_health == actual_health
+
+    def test_golf_club(self):
+        self.player.add_item("Golf Club", 1)
+        self.game.trigger_attack(self.player.get_items())
+        expected_health = 4
+
+        actual_health = self.player.get_health()
+
+        assert expected_health == actual_health
+
+    def test_oil_and_candle(self):
+        self.player.add_item("Oil", 1)
+        self.player.add_item("Candle", 1)
+        self.game.trigger_attack(self.player.get_items())
+        expected_health = 6
+
+        actual_health = self.player.get_health()
+
+        assert expected_health == actual_health
+
+    def test_candle_and_gasoline(self):
+        self.player.add_item("Candle", 1)
+        self.player.add_item("Gasoline", 1)
+        self.game.trigger_attack(self.player.get_items())
+        expected_health = 6
+
+        actual_health = self.player.get_health()
+
+        assert expected_health == actual_health
+
+    def test_chainsaw(self):
+        self.player.add_item("Chainsaw", 1)
+        self.player.add_item("Gasoline", 1)
+
+        self.game.trigger_attack(self.player.get_items())
+        expected_health = 5
+
+        actual_health = self.player.get_health()
+
+        assert expected_health == actual_health
+
+    def test_no_item(self):
+        self.game.trigger_attack()
+        expected_health = 2
+
+        actual_health = self.player.get_health()
+
+        assert expected_health == actual_health
 
 
 if __name__ == '__main__':
