@@ -24,6 +24,7 @@ class Context:
         return self._strategy.execute()
 
 
+#  Abstract Strategy
 class AttackStrategy(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self):
@@ -38,6 +39,7 @@ class AttackStrategy(metaclass=ABCMeta):
         pass  # pragma: no cover
 
 
+#  Abstract Strategy
 class ItemStrategy(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self):
