@@ -97,6 +97,7 @@ class ChainsawStrategy(ItemStrategy):
         self._damage_buff = 3
 
     def execute(self):
+        print("You used the chainsaw, gain 3 attack")
         return self._damage_buff
 
 

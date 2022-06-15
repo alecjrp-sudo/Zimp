@@ -626,7 +626,6 @@ class Game:
                 else:
                     return
             if len(item[0]) == 1:  # One item strategy
-                print(item)
                 strategy = OneItemAttackStrategy(item[0][0][1])
                 self.__context.set_strategy(strategy.calculate(item))
                 player_attack += self.__context.execute_attack_strategy()
